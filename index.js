@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,12 +24,34 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const blogCollection = client.db("blogDB").collection("blog");
+    const commentCollection = client.db("blogDB").collection("comment");
+
+    app.get("/addBlog", async (req, res) => {
+      const cursor = blogCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.get("/addBlog/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogCollection.findOne(query)
+      res.send(result)
+    });
 
     app.post("/addBlog", async (req, res) => {
       const newBlog = req.body;
       console.log(newBlog);
-      const result =await blogCollection.insertOne(newBlog)
-      res.send(result)
+      const result = await blogCollection.insertOne(newBlog);
+      res.send(result);
+    });
+
+    // Comment section api
+
+    app.post("/comment", async (req, res) => {
+      const newComment = req.body;
+      console.log(newComment);
+      const result = await commentCollection.insertOne(newComment);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
