@@ -98,8 +98,30 @@ async function run() {
       const result = await blogCollection.insertOne(newBlog);
       res.send(result);
     });
+    app.put("/addBlog/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = req.body;
+      const blog = {
+        $set: {
+          Blog_Name: updateDoc.Blog_Name,
+          Photo: updateDoc.Photo,
+          Short_description: updateDoc.Short_description,
+          Long_description: updateDoc.Long_description,
+        },
+      };
+      const result = await blogCollection.updateOne(filter, blog, options);
+      res.send(result);
+    });
 
     // Comment section api
+
+    app.get("/comment", async (req, res) => {
+      const cursor = commentCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     app.post("/comment", async (req, res) => {
       const newComment = req.body;
