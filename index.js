@@ -57,15 +57,16 @@ const cookeOption = {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const blogCollection = client.db("blogDB").collection("blog");
     const commentCollection = client.db("blogDB").collection("comment");
+    const wishlistCollection = client.db("blogDB").collection("wishlist");
 
     // Auth related api
 
-    app.post("/jwt", logger, async (req, res) => {
+    app.post("/jwt", async (req, res) => {
       const user = req.body;
-      console.log("user of token", user);
+      // console.log("user of token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
@@ -85,19 +86,20 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-    app.get("/addBlog/:id", logger, async (req, res) => {
+    app.get("/addBlog/:id", logger, verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await blogCollection.findOne(query);
       res.send(result);
     });
 
-    app.post("/addBlog", logger, async (req, res) => {
+    app.post("/addBlog", async (req, res) => {
       const newBlog = req.body;
       console.log(newBlog);
       const result = await blogCollection.insertOne(newBlog);
       res.send(result);
     });
+
     app.put("/addBlog/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -130,8 +132,28 @@ async function run() {
       res.send(result);
     });
 
+    // Wishlist
+    app.get("/wishlist", async (req, res) => {
+      const cursor = wishlistCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.post("/wishlist", async (req, res) => {
+      const wishlist = req.body;
+      console.log(wishlist);
+      const result = await wishlistCollection.insertOne(wishlist);
+      res.send(result);
+    });
+    app.delete("/wishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await wishlistCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
