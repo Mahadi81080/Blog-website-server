@@ -61,6 +61,7 @@ async function run() {
     const blogCollection = client.db("blogDB").collection("blog");
     const commentCollection = client.db("blogDB").collection("comment");
     const wishlistCollection = client.db("blogDB").collection("wishlist");
+    const bookingCollection = client.db("blogDB").collection("booking");
 
     // Auth related api
 
@@ -86,7 +87,7 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-    app.get("/addBlog/:id", logger, verifyToken, async (req, res) => {
+    app.get("/addBlog/:id", logger, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await blogCollection.findOne(query);
@@ -149,6 +150,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await wishlistCollection.deleteOne(query);
+      res.send(result);
+    });
+    // Booking related api
+    app.post("/booking", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
 
